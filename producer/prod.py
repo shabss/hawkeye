@@ -1,7 +1,14 @@
 
 import kafka
-cluster = kafka.KafkaClient("172-31-2-168:9092")
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s.%(msecs)s:%(name)s:%(thread)d:%(levelname)s:%(process)d:%(message)s',
+    level=logging.DEBUG
+)
+
+cluster = kafka.KafkaClient("52.34.46.84:9092")
 prod = kafka.SimpleProducer(cluster, async=False)
-topic = "pipeline-setup"
-msg_list = ["first message", "second message"]
-prod.send(topic, *msg_list)
+topic = "hawk-eye-test1"
+msg_list = ["{msg : 'first message'}", "{msg: 'second message'}"]
+prod.send_messages(topic, *msg_list)
