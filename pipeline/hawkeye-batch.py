@@ -58,10 +58,10 @@ aggTaskType	= aggTSDelta(hemsgs, "TaskType")
 
 #aggPacketID = aggTSDelta(hemsgs, "PacketID")
 	 
-rdd = aggAppID.union(aggSwID)
+rdd = (aggAppID.union(aggSwID)
 		.union(aggSwType)
 		.union(aggTaskID)
-		.union(aggTaskType)
+		.union(aggTaskType))
 		#.union(aggHwID)
 		#.union(aggHwType)
 rdd.foreachPartition(aggToCassandraPart)
