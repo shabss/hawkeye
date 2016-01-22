@@ -1,0 +1,34 @@
+CREATE KEYSPACE hawkeye3 WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+use hawkeye3;
+
+CREATE TABLE sliding_window (
+	monitor text, 
+	ts_start bigint, 
+	time_total bigint,
+	event_count bigint,
+	PRIMARY KEY (monitor, ts_start) 
+) WITH CLUSTERING ORDER BY (ts_start DESC);
+	
+CREATE TABLE user_alerts(
+	user_id text,
+	monitor text,
+	threshold bigint,
+	PRIMARY KEY (monitor, user_id) 
+) WITH CLUSTERING ORDER BY (user_id ASC);
+
+CREATE TABLE alert_window (
+	monitor text, 
+	ts_start bigint, 
+	time_total bigint,
+	event_count bigint,
+	PRIMARY KEY (monitor, ts_start) 
+) WITH CLUSTERING ORDER BY (ts_start DESC);
+
+CREATE TABLE sliding_window_batch (
+	monitor text, 
+	ts_start bigint, 
+	time_total bigint,
+	event_count bigint,
+	PRIMARY KEY (monitor, ts_start) 
+) WITH CLUSTERING ORDER BY (ts_start DESC);
+
