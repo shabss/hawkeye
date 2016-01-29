@@ -68,7 +68,7 @@
 				for (var i = 0; i < monLen; i++) {
 					var mon = msg.monitors[i];
 					var mon_id = '#MONITOR_' + mon.monitor;
-					var mon_row = monitorsTable.rows(mon_id)
+					var mon_row = monitorsTable.row(mon_id)
 					
 					if (mon_row.any()) {
 						console.log("Found Row:" + mon_id);
