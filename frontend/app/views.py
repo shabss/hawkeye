@@ -35,7 +35,7 @@ def monitors():
 	
 @app.route('/api/stream/monitors/')
 def report_monitors():
-	user_monitors = ["HawkEye", "SWTYPE100", "SWID100", "TASKTYPE100", "TASKID100",  "HWTYPE100", "HWID100", "SWTYPE200", "SWID200", "TASKTYPE200", "TASKID200",  "HWTYPE200", "HWID200"]
+	user_monitors = ["HawkEye", "SWTYPE100", "SWID100", "TASKTYPE100", "TASKID100",  "HWTYPE100", "HWID100", "SWTYPE20", "SWID20", "TASKTYPE20", "TASKID20",  "HWTYPE20", "HWID20"]
 	stmt = "select monitor, tdeltaagg, nevents from monitor_proc_window where monitor in (%s)" % ','.join(["'" + m + "'" for m in user_monitors])
 	print stmt
 	response = session.execute(stmt)
