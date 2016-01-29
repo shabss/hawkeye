@@ -1,5 +1,5 @@
-CREATE KEYSPACE hawkeye3 WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
-use hawkeye3;
+CREATE KEYSPACE hawkeye4 WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+use hawkeye4;
 
 CREATE TABLE sliding_window (
 	monitor text, 
@@ -32,3 +32,15 @@ CREATE TABLE sliding_window_batch (
 	PRIMARY KEY (monitor, ts_start) 
 ) WITH CLUSTERING ORDER BY (ts_start DESC);
 
+CREATE TABLE monitor_proc_window (
+	monitor text,
+	tsInMin bigint,
+	tsInMax bigint,
+	tsOutMin bigint,
+	tsOutMax bigint,
+	tDeltaAgg bigint,
+	nEvents bigint,
+	tProcIn bigint,
+	tProcOut bigint,
+	PRIMARY KEY (monitor)
+) WITH CLUSTERING ORDER BY (tProcIn DESC);

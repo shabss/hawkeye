@@ -16,7 +16,7 @@ sc = SparkContext(conf=conf)
 
 from cassandra.cluster import Cluster
 cluster = Cluster(['52.34.46.84', '52.89.61.14', '52.27.234.47', '52.24.233.165'])
-session = cluster.connect('hawkeye3')
+session = cluster.connect('hawkeye4')
 
 sqlsc = SQLContext(sc)
 hemsgs = sqlsc.jsonFile("hdfs://" + master_public_dns + ":9000/camus/topics/hawkeye-prod1/*/*/*/*/*/*")
@@ -41,7 +41,7 @@ def aggToCassandraPart(agg):
 	from cassandra.cluster import Cluster
 	if agg:
 		cascluster = Cluster(['52.34.46.84', '52.89.61.14', '52.27.234.47', '52.24.233.165'])
-		casSession = cascluster.connect('hawkeye3')
+		casSession = cascluster.connect('hawkeye4')
 		for aggItem in agg:
 			casSession.execute('INSERT INTO sliding_window_batch (monitor, ts_start, time_total, event_count) VALUES (%s, %s, %s, %s)', (aggItem[0], 0, aggItem[1][0], aggItem[1][1]))
 		casSession.shutdown()
