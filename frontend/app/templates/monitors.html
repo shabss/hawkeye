@@ -3,7 +3,7 @@
 
 <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css" rel="stylesheet">
 
-<div class="row" style="height:100vh;">
+<div class="row tab" style="height:100vh;">
 	<br> <br> 	<br> <br> 	<br> <br>
 	<input type="button" onclick="start_update()" value="Start"/>
 	<input type="button" onclick="stop_update()" value="Stop"/>	
@@ -20,22 +20,6 @@
                 <th>Bandwidth</th>
             </tr>
         </tfoot>		
-		<!--
-		<tbody>
-			<tr>
-				<td>MON1</td>
-				<td>50</td>
-			</tr>
-			<tr>
-				<td>MON2</td>
-				<td>50</td>
-			</tr>
-			<tr>
-				<td>MON3</td>
-				<td>50</td>
-			</tr>	
-		</tbody>
-		-->
     </table>
 	<div id="edix"> </div>
 </div>
@@ -46,7 +30,7 @@
 	var monitorsTable = $('#monitors').DataTable({
 		'fnCreatedRow' : function (nRow, aData, iDataIndex) {
 			var mon_id = 'MONITOR_' + aData[0];
-			console.log("Row:" + mon_id);
+			//console.log("Row:" + mon_id);
 			$(nRow).attr('id', mon_id);
 		}
 	});
@@ -64,17 +48,17 @@
 			data: "=success",
 			success: function(msg) {
 				var monLen = msg.monitors.length;
-				console.log(monLen)
+				//console.log(monLen)
 				for (var i = 0; i < monLen; i++) {
 					var mon = msg.monitors[i];
 					var mon_id = '#MONITOR_' + mon.monitor;
 					var mon_row = monitorsTable.row(mon_id)
 					
 					if (mon_row.any()) {
-						console.log("Found Row:" + mon_id);
+						//console.log("Found Row:" + mon_id);
 						mon_row.data([mon.monitor, mon.tdeltaagg])
 					} else {
-						console.log("Adding Row:" + mon_id);
+						//console.log("Adding Row:" + mon_id);
 						monitorsTable.row.add([mon.monitor, mon.tdeltaagg])
 					}
 				}
