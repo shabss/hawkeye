@@ -26,11 +26,5 @@ public class SoftwareComponent extends EventComponent {
 		}
 		//System.out.println("SoftwareComponent.createSubComponents: subComps.size = " + subComps.size());
 	}
-	
-	@Override
-	public void fill(HawkeyeEvent event) {
-		event.SwType = strType;
-		event.SwID = strID;
-	}
 }
 

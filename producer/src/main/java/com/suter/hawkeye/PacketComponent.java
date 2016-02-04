@@ -31,6 +31,7 @@ public class PacketComponent extends EventComponent {
 	
 	@Override
 	public void fanOut() {
+		event.shallowInit();
 		fillCascade(event);
 		emit(event);
 	}
@@ -52,10 +53,14 @@ public class PacketComponent extends EventComponent {
 	public void emit(HawkeyeEvent event) {
 		//String json = gson.toJson(event);
 		String json = event.toString();
-		KeyedMessage<String, String> data = new KeyedMessage<String, String>
-			(ProdUtils.hawkeyeTopic, ProdUtils.appID.toString(), json);
-		ProdUtils.kafkaProducer.send(data);
-		System.out.println(json);
+		if (ProdUtils.printOnly == false) {
+			KeyedMessage<String, String> data = new KeyedMessage<String, String>
+				(ProdUtils.hawkeyeTopic, ProdUtils.appID.toString(), json);
+			ProdUtils.kafkaProducer.send(data);
+		}
+		if (ProdUtils.printFull || ProdUtils.printOnly) {
+			System.out.println(json);
+		}
 	}
 }
 

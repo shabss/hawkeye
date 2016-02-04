@@ -34,6 +34,9 @@ class ProdUtils {
 	public static int MAX_PACKET_DELAY		= 100000;
 	public static int MAX_MESSAGES			= 1000000;
 	
+	public static String MON_TYPE_ID = "I";
+	public static String MON_TYPE_TYPE = "T";
+	
 	public static EventComponentClass swCompClass;
 	public static EventComponentClass taskCompClass;
 	public static EventComponentClass appCompClass;
@@ -43,15 +46,19 @@ class ProdUtils {
 	
 	//parse args
 	public static Integer appID;
-	public static String appName;
+	public static String  appName;
+	public static boolean printOnly = false;
+	public static boolean printFull = false;
 	//end parse args
 	
 	public static String hawkeyeTopic = "hawkeye4";
 	public static String kafkaBrokers = 
-		"52.34.46.84:9092," + 
-		"52.89.61.14:9092," + 
-		"52.27.234.47:9092," + 
-		"52.24.233.165:9092";
+		"54.148.25.241:9092," + 
+		"54.148.24.60:9092," + 
+		"54.69.151.76:9092," + 
+		"52.89.156.217:9092," +
+		"52.89.121.49:9092";
+		
 	public static Producer<String, String> kafkaProducer;
 	
 	public static long getEventTime() {

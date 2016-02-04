@@ -32,11 +32,6 @@ public class AppComponent extends EventComponent {
 		}
 	}
 	
-	@Override
-	public void fill(HawkeyeEvent event) {
-		event.AppID = strID;
-	}
-	
 	public void startEmit() {
 		while (true) {
 			fanOut();

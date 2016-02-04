@@ -25,11 +25,6 @@ public class TaskComponent extends EventComponent {
 			comp.createSubComponents();			
 		}
 	}
-
-	public void fill(HawkeyeEvent event) {
-		event.TaskType = strType;
-		event.TaskID = strID;
-	}	
 }
 
 

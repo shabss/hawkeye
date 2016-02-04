@@ -60,8 +60,19 @@ public abstract class EventComponent {
 			ec.fanOut();
 		}
 	}
+	
+	public void fill(HawkeyeEvent event) {
+
+		HawkeyeMonitor monID = new HawkeyeMonitor(ProdUtils.MON_TYPE_ID, 
+			compClass.prefix + "ID", strID, ++event.totalPower);
+		HawkeyeMonitor monType = new HawkeyeMonitor(ProdUtils.MON_TYPE_TYPE, 
+			compClass.prefix + "TYPE", strType, ++event.totalPower);
+		
+		event.monitorGroup.add(monID);
+		event.monitorGroup.add(monType);
+	}
+	
 	abstract public void createSubComponents();
-	abstract public void fill(HawkeyeEvent event);
 }
 
 
