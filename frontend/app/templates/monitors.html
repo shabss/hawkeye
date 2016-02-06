@@ -3,25 +3,68 @@
 
 <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css" rel="stylesheet">
 
-<div class="row tab" style="height:100vh;">
-	<br> <br> 	<br> <br> 	<br> <br>
+<div class="row tab" style=""> <br>
 	<input type="button" onclick="start_update()" value="Start"/>
 	<input type="button" onclick="stop_update()" value="Stop"/>	
 	<table id="monitors" class="display" cellspacing="0" width="100%">
-        <thead>
-            <tr>
-                <th>Monitor</th>
-                <th>Bandwidth</th>
-            </tr>
-        </thead>
+		<thead>
+			<tr>
+				<th>Monitor</th>
+				<th>Throughput</th>
+				<th>Min</th>
+				<th>0%-5% (-2&sigma;+)</th>
+				<th>5%-16% (-&sigma;+)</th>
+				<th>84%-95% (&sigma;+)</th>
+				<th>95%-100% (2&sigma;+)</th>
+				<th>Max</th>
+			</tr>
+		</thead>
 		<tfoot>
-            <tr>
-                <th>Monitor</th>
-                <th>Bandwidth</th>
-            </tr>
-        </tfoot>		
-    </table>
-	<div id="edix"> </div>
+			<tr>
+				<th>Monitor</th>
+				<th>Throughput</th>
+				<th>Min</th>
+				<th>0%-5% (-2&sigma;+)</th>
+				<th>5%-16% (-&sigma;+)</th>
+				<th>84%-95% (&sigma;+)</th>
+				<th>95%-100% (2&sigma;+)</th>
+				<th>Max</th>
+				</tr>
+		</tfoot>
+	</table>
+</div>
+<hr>
+<div class="row tab" style="">
+	<input type="button" onclick="start_alerts_update()" value="Start"/>
+	<input type="button" onclick="stop_alerts_update()" value="Stop"/>	
+	<table id="alerts" class="display" cellspacing="0" width="100%">
+		<thead>
+			<tr>
+				<th>Alert</th>
+				<th>Time</th>
+				<th>Throughput</th>
+				<th>Min</th>
+				<th>0%-5% (-2&sigma;+)</th>
+				<th>5%-16% (-&sigma;+)</th>
+				<th>84%-95% (&sigma;+)</th>
+				<th>95%-100% (2&sigma;+)</th>
+				<th>Max</th>
+			</tr>
+		</thead>
+		<tfoot>
+			<tr>
+				<th>Alert</th>
+				<th>Time</th>
+				<th>Throughput</th>
+				<th>Min</th>
+				<th>0%-5% (-2&sigma;+)</th>
+				<th>5%-16% (-&sigma;+)</th>
+				<th>84%-95% (&sigma;+)</th>
+				<th>95%-100% (2&sigma;+)</th>
+				<th>Max</th>
+				</tr>
+		</tfoot>
+	</table>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -37,7 +80,7 @@
 	
 	var monUpdateTimer = '';
 	
-	function start_update() {
+	function start_monitors_update() {
 		monUpdateTimer = setInterval("update_monitors()",1000);
 	}
 
@@ -67,13 +110,62 @@
 		});
 	}
 	
-	function stop_update() {
+	function stop_monitors_update() {
 		clearInterval(monUpdateTimer);
 	}	
 	
-	$(document).ready(function() {
-		start_update();
+	///////////////////////////
+	///////////////////////////
+	///////////////////////////
+	
+	var alertsTable = $('#alerts').DataTable({
+		//'fnCreatedRow' : function (nRow, aData, iDataIndex) {
+		//	var mon_id = 'ALERT_' + aData[0];
+		//	//console.log("Row:" + mon_id);
+		//	$(nRow).attr('id', mon_id);
+		//}
 	});
-
+	
+	var alertUpdateTimer = '';
+	function start_alerts_update() {
+		alertUpdateTimer = setInterval("update_monitors()",600000);
+	}
+	
+	/*
+	function update_alerts() { 
+		$.ajax({
+			type: "GET",
+			url: "/api/stream/monitors/",
+			data: "=success",
+			success: function(msg) {
+				var monLen = msg.monitors.length;
+				//console.log(monLen)
+				for (var i = 0; i < monLen; i++) {
+					var mon = msg.monitors[i];
+					var mon_id = '#ALERT_' + mon.monitor;
+					var mon_row = monitorsTable.row(mon_id)
+					
+					if (mon_row.any()) {
+						//console.log("Found Row:" + mon_id);
+						mon_row.data([mon.monitor, mon.tdeltaagg])
+					} else {
+						//console.log("Adding Row:" + mon_id);
+						monitorsTable.row.add([mon.monitor, mon.tdeltaagg])
+					}
+				}
+				monitorsTable.draw( false );
+			}
+		});
+	}
+	*/
+	
+	function stop_alerts_update() {
+		clearInterval(alertUpdateTimer);
+	}	
+	
+	$(document).ready(function() {
+		start_monitors_update();
+		//start_alerts_update();
+	});
 </script> 
 {% endblock %} 
