@@ -35,7 +35,7 @@ public abstract class EventComponent {
 		
 		random = new Random();
 		subComps = new ArrayList<EventComponent> ();
-		typeBreath = random.nextInt(compClass.maxBreathPerType) + 1;		
+		typeBreath = random.nextInt(compClass.maxBreathPerType) + 1;
 	}
 
 	public void init() {
