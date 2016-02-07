@@ -4,6 +4,7 @@ import java.util.Random;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,9 @@ import kafka.producer.ProducerConfig;
 import com.google.gson.Gson;
 
 public class PacketComponent extends EventComponent {
+	public static final Logger LOG = LoggerFactory.getLogger(PacketComponent.class);
 	
+	static final AtomicLong packetCounter = new AtomicLong();
 	HawkeyeEvent event;
 	Gson gson;
 	
@@ -24,15 +27,20 @@ public class PacketComponent extends EventComponent {
 		Integer type, Integer id, String strType, String strID) {
 		super(compClass, parent, type, id, strType, strID);
 		subComps = null; //dont have subComps
-		event = new HawkeyeEvent();
+		event = null;
 		gson = new Gson();
 	}
 
 	
 	@Override
 	public void fanOut() {
-		event.shallowInit();
-		fillCascade(event);
+		if (event == null) {
+			event = new HawkeyeEvent();
+			event.shallowInit();
+			fillCascade(event);
+		} else {
+			fill(event);
+		}
 		emit(event);
 	}
 	
@@ -44,7 +52,7 @@ public class PacketComponent extends EventComponent {
 	@Override
 	public void fill(HawkeyeEvent event) {
 		//always get new ID
-		int id = random.nextInt(compClass.maxIDs);
+		long id = packetCounter.incrementAndGet();
 		event.packetID = compClass.prefix + id;
 		event.tsIn = ProdUtils.getEventTime();
 		event.tsOut = event.tsIn + random.nextInt(ProdUtils.MAX_PACKET_DELAY);
@@ -59,8 +67,10 @@ public class PacketComponent extends EventComponent {
 			ProdUtils.kafkaProducer.send(data);
 		}
 		if (ProdUtils.printFull || ProdUtils.printOnly) {
-			System.out.println(json);
+			LOG.info(json);
 		}
 	}
 }
+
+
 
