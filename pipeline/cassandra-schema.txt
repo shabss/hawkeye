@@ -43,4 +43,4 @@ CREATE TABLE monitor_proc_window (
 	tProcIn bigint,
 	tProcOut bigint,
 	PRIMARY KEY (monitor)
-) WITH CLUSTERING ORDER BY (tProcIn DESC);
+);

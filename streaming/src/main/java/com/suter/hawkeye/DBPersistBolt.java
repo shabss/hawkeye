@@ -37,7 +37,7 @@ public class DBPersistBolt extends BaseBasicBolt {
 	public void prepare(Map stormConf,
 						TopologyContext context) {
 		LOG.info("DBPersistBolt.prepare: enter");
-		Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.zkIp).build();
+		Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.cassandraHost).build();
 		casSession = cluster.connect(HawkeyeUtil.hawkeyeKeySpace);
 		monProcWindowStmt = casSession.prepare(
 			"INSERT INTO monitor_proc_window (" +

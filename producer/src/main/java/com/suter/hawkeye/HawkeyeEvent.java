@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.io.Serializable;
 
 public class HawkeyeEvent implements Serializable {
-	public long TsIn;
-	public long TsOut;
-	public String PacketID;
+	public long tsIn;
+	public long tsOut;
+	public String packetID;
 	public int totalPower;
 	public List <HawkeyeMonitor> monitorGroup;
 	
@@ -28,9 +28,9 @@ public class HawkeyeEvent implements Serializable {
 	@Override
 	public String toString() {
 		String strHE = "{" +
-			"\"tsIn\":" 	+ TsIn 	+ ", " +
-			"\"tsOut\":" 	+ TsOut + ", " +
-			"\"packetID\":\"" + PacketID + "\", " +
+			"\"tsIn\":" 	+ tsIn 	+ ", " +
+			"\"tsOut\":" 	+ tsOut + ", " +
+			"\"packetID\":\"" + packetID + "\", " +
 			"\"monitorGroup\": [";
 		
 		for (HawkeyeMonitor mon: monitorGroup) {

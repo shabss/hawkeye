@@ -45,9 +45,9 @@ public class PacketComponent extends EventComponent {
 	public void fill(HawkeyeEvent event) {
 		//always get new ID
 		int id = random.nextInt(compClass.maxIDs);
-		event.PacketID = compClass.prefix + id;
-		event.TsIn = ProdUtils.getEventTime();
-		event.TsOut = event.TsIn + random.nextInt(ProdUtils.MAX_PACKET_DELAY);
+		event.packetID = compClass.prefix + id;
+		event.tsIn = ProdUtils.getEventTime();
+		event.tsOut = event.tsIn + random.nextInt(ProdUtils.MAX_PACKET_DELAY);
 	}
 	
 	public void emit(HawkeyeEvent event) {
