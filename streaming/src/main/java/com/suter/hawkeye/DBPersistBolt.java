@@ -55,7 +55,7 @@ public class DBPersistBolt extends BaseBasicBolt {
 		//LOG.info("DBPersistBolt.execute: tuple is: " + tuple);
 		String monitor  = tuple.getStringByField("monitor");
 		//LOG.info("ProcWindowBolt.execute: 2");
-		MonitorProcWindow mpw = (MonitorProcWindow) tuple.getValueByField("procWindow");
+		MonitorPerfAgg agg = (MonitorPerfAgg) tuple.getValueByField("agg");
 		//LOG.info("DBPersistBolt.execute: 3");
 		
 		BoundStatement boundStatement = new BoundStatement(monProcWindowStmt);

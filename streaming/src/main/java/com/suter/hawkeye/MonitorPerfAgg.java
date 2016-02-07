@@ -2,17 +2,19 @@ package com.suter.hawkeye;
 
 import java.io.Serializable;
 
-public class MonitorProcWindow implements Serializable {
+public class  MonitorPerfAgg implements Serializable {
 	public String monitor;
+	
+	//Below are for sanity checks
 	public long tsInMin;
 	public long tsInMax;
 	public long tsOutMin;
 	public long tsOutMax;
 	public long tDeltaAgg;
 	public long nEvents;
-	public long tProcIn;
-	public long tProcOut;
-	
+	public long tWindowStart;
+	public long tWindowEnd;
+	public long tWindowSize;
 	
 	public MonitorProcWindow() {
 		monitor = "";
@@ -22,10 +24,9 @@ public class MonitorProcWindow implements Serializable {
 		tsOutMax = 0;
 		tDeltaAgg = 0;
 		nEvents = 0;
-		tProcIn = 0;
-		tProcOut = 0;
-		
-		
+		tWindowStart = 0;
+		tWindowStart = 0;
+		tWindowSize = 0;
 	}
 	@Override
 	public String toString() {
@@ -37,8 +38,9 @@ public class MonitorProcWindow implements Serializable {
 			", tsOutMax=" + tsOutMax + 
 			", tDeltaAgg=" + tDeltaAgg +
 			", nEvents=" + 	nEvents +
-			", tProcIn=" + tProcIn +
-			", tProcOut=" + tProcOut +
+			", tWindowStart=" + tWindowStart +
+			", tWindowEnd=" + tWindowEnd +
+			", tWindowSize=" tWindowSize +
 		'}';
 	}
 }

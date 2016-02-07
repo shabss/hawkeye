@@ -45,17 +45,19 @@ public class Topology {
     {
 		TopologyBuilder builder = new TopologyBuilder();
 		
-		builder.setSpout("kafka-spout", createKafkaSpout(), 32).setNumTasks(4);
+		builder.setSpout("kafka-spout", createKafkaSpout());
 		builder.setBolt("extract-monitors", new ExtractMonitorsBolt())
 			.shuffleGrouping("kafka-spout");
-		builder.setBolt("proc-window", new ProcWindowBolt())
+		builder.setBolt("now-window", new NowWindowBolt())
 			.fieldsGrouping("extract-monitors", new Fields("monitor"));
 		builder.setBolt("db-persist", new DBPersistBolt())
-			.shuffleGrouping("proc-window");
-			
-		//builder.setBolt("send-alert", new SendAlertBolt())
-		//	.fieldsGrouping("extract-monitors", new Fields("monitor"));
-			
+			.shuffleGrouping("now-window");
+
+		builder.setBolt("history-window", new HistoryWindowBolt())
+			.fieldsGrouping("extract-monitors", new Fields("monitor"));
+		builder.setBolt("history-persist", new PersistHistoryBolt())
+			.shuffleGrouping("history-window");
+
 		Config config = new Config();
 		config.setDebug(true);
 		

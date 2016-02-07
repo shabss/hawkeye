@@ -10,15 +10,16 @@ class HawkeyeUtil {
 	public static int kafkaPartitions = 128;
 	*/
 
-	public static String cassandraHost = "52.34.253.146";
-	public static String zkIp = "54.148.25.241";
-	public static String nimbusHost = "54.148.25.241";
-	public static String zookeeperHost = zkIp +":2181";	
-	public static String hawkeyeTopic = "hawkeye4";
-	public static String hawkeyeKeySpace = "hawkeye4";
-	public static int kafkaPartitions = 10;
+	public static String 	cassandraHost = "52.34.253.146";
+	public static String 	zkIp = "54.148.25.241";
+	public static String 	nimbusHost = "54.148.25.241";
+	public static String 	zookeeperHost = zkIp +":2181";	
+	public static String 	hawkeyeTopic = "hawkeye4";
+	public static String 	hawkeyeKeySpace = "hawkeye4";
+	public static int 		kafkaPartitions = 10;
+	public static long 		historyWindowSize = 600000; //10 mins
 	
-	public static long getProcWindowTime() {
+	public static long getTime() {
 		return System.currentTimeMillis();
 	}
 }

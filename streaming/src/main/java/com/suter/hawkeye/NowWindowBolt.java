@@ -17,22 +17,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ProcWindowBolt extends BaseBasicBolt {
+public class NowWindowBolt extends BaseBasicBolt {
 	
-	public static final Logger LOG = LoggerFactory.getLogger(ProcWindowBolt.class);
-	private Map<String, MonitorProcWindow> procWindow;
-	private long currentProcWindowStart;
+	public static final Logger LOG = LoggerFactory.getLogger(NowWindowBolt.class);
+	private Map<String, MonitorPerfAgg> window;
+	private long currentWindowStart;
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("monitor", "procWindow"));
+		declarer.declare(new Fields("monitor", "agg"));
 	}
 
 	@Override
 	public void prepare(Map stormConf,
 						TopologyContext context) {
-		procWindow = new HashMap<String, MonitorProcWindow>();
-		currentProcWindowStart = HawkeyeUtil.getProcWindowTime();
+		window = new HashMap<String, MonitorPerfAgg>();
+		currentWindowStart = HawkeyeUtil.getTime();
 		LOG.info("ProcWindowBolt.prepare: done");
 	}
 
@@ -48,7 +48,7 @@ public class ProcWindowBolt extends BaseBasicBolt {
 		//LOG.info("ProcWindowBolt.execute: 1");
 		if (isTickTuple(tuple)) {
 			//LOG.info("ProcWindowBolt.execute: 2");
-			emitProcWindowAggregates(outputCollector);
+			emitWindowAggregates(outputCollector);
 			//LOG.info("ProcWindowBolt.execute: 3");
 		} else {
 			//LOG.info("ProcWindowBolt.execute: 4");
@@ -59,13 +59,13 @@ public class ProcWindowBolt extends BaseBasicBolt {
 			Long tDelta = tuple.getLongByField("tDelta");
 			//LOG.info("ProcWindowBolt.execute: 5");
 			
-			MonitorProcWindow monitorProcWindow = getMonitorProcWindow(monitor);
-			monitorProcWindow.nEvents++;
-			monitorProcWindow.tDeltaAgg += tDelta;
-			monitorProcWindow.tsInMin = Math.min(tsIn, monitorProcWindow.tsInMin);
-			monitorProcWindow.tsInMax = Math.max(tsIn, monitorProcWindow.tsInMax);
-			monitorProcWindow.tsOutMin = Math.min(tsOut, monitorProcWindow.tsOutMin);
-			monitorProcWindow.tsOutMax = Math.max(tsOut, monitorProcWindow.tsOutMin);
+			MonitorPerfAgg agg = getMonitorAgg(monitor);
+			agg.nEvents++;
+			agg.tDeltaAgg += tDelta;
+			agg.tsInMin = Math.min(tsIn, agg.tsInMin);
+			agg.tsInMax = Math.max(tsIn, agg.tsInMax);
+			agg.tsOutMin = Math.min(tsOut, agg.tsOutMin);
+			agg.tsOutMax = Math.max(tsOut, agg.tsOutMin);
 			//LOG.info("ProcWindowBolt.execute: 6");
 		}
 	}
@@ -93,32 +93,32 @@ public class ProcWindowBolt extends BaseBasicBolt {
 				mpw.tDeltaAgg, mpw.nEvents, mpw.tProcIn, mpw.tProcOut));
 			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:5: monitor=" + monitor);
 		}
-		currentProcWindowStart = now;
+		currentWindowStart = now;
 		procWindow.clear();
 	}
 */
-	private void emitProcWindowAggregates(BasicOutputCollector outputCollector) {
-		Long now = HawkeyeUtil.getProcWindowTime();
-		Set<String> monitorsAvailable = procWindow.keySet();
+	private void emitWindowAggregates(BasicOutputCollector outputCollector) {
+		Long now = HawkeyeUtil.getTime();
+		Set<String> monitorsAvailable = window.keySet();
 		for (String monitor : monitorsAvailable) {
 			//to do, do sanity check to see if tsIn, tsOut match tsProcIn, tsProcOut
-			MonitorProcWindow mpw = procWindow.get(monitor);
-			mpw.tProcOut = now;
-			outputCollector.emit(new Values(monitor, mpw));
+			MonitorPerfAgg agg = window.get(monitor);
+			agg.tProcOut = now;
+			outputCollector.emit(new Values(monitor, agg));
 		}
-		currentProcWindowStart = now;
-		procWindow.clear();
+		currentWindowStart = now;
+		window.clear();
 	}
 
-	private MonitorProcWindow getMonitorProcWindow(String monitor) {
-		MonitorProcWindow monitorProcWindow = procWindow.get(monitor);
-		if (monitorProcWindow == null) {
-			monitorProcWindow = new MonitorProcWindow();
-			monitorProcWindow.monitor = monitor;
-			monitorProcWindow.tProcIn = currentProcWindowStart;
-			procWindow.put(monitor, monitorProcWindow);
+	private MonitorPerfAgg getMonitorAgg(String monitor) {
+		MonitorPerfAgg agg = window.get(monitor);
+		if (agg == null) {
+			agg = new MonitorPerfAgg();
+			agg.monitor = monitor;
+			agg.tProcIn = currentWindowStart;
+			window.put(monitor, agg);
 		}
-		return monitorProcWindow;
+		return agg;
 	}
 }
 
