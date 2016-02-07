@@ -31,6 +31,10 @@ public class ExtractMonitorsBolt extends BaseBasicBolt {
 		Gson gson = new Gson();
 		HawkeyeEvent event = gson.fromJson(strEvent, HawkeyeEvent.class);
 		
+		for (HawkeyeMonitor mon: event.monitorGroup) {
+			emitMonitor(outputCollector, event, mon);
+		}
+		/*
 		emitMonitor(outputCollector, event, event.AppID);
 		emitMonitor(outputCollector, event, event.SwType);
 		emitMonitor(outputCollector, event, event.SwID);
@@ -40,12 +44,25 @@ public class ExtractMonitorsBolt extends BaseBasicBolt {
 		emitMonitor(outputCollector, event, event.HwID);
 		emitMonitor(outputCollector, event, event.DevType);
 		emitMonitor(outputCollector, event, event.DevID);
-		
+		*/
 	}
 	
+	/*
 	public void emitMonitor(BasicOutputCollector outputCollector, 
 							HawkeyeEvent event, String monitor) {
 		long tDelta = event.TsOut - event.TsIn;
 		outputCollector.emit(new Values(monitor, event.TsIn, event.TsOut, tDelta));
 	}
+	*/
+	
+	public void emitMonitor(BasicOutputCollector outputCollector, 
+							HawkeyeEvent event, HawkeyeMonitor mon) {
+		long tDelta = event.TsOut - event.TsIn;
+		//To Do:
+		//	enrich emit: include mon.type, mon.subgroup also
+		//	load balance by looking at mon.power
+		outputCollector.emit(new Values(mon.id, event.TsIn, event.TsOut, tDelta));
+	}
+
+	
 }
