@@ -17,9 +17,11 @@ class HawkeyeUtil {
 	public static String 	hawkeyeTopic = "hawkeye4";
 	public static String 	hawkeyeKeySpace = "hawkeye4";
 	public static int 		kafkaPartitions = 10;
-	public static long 		historyWindowSize = 600000; //10 mins
+	public static long 		historyWindowSizeMS = 600000; //10 mins
+	public static long		nowWindowSizeMS = 1000;
 	
 	public static long getTime() {
 		return System.currentTimeMillis();
 	}
 }
+

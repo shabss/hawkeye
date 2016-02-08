@@ -61,8 +61,8 @@ public class DBPersistBolt extends BaseBasicBolt {
 		BoundStatement boundStatement = new BoundStatement(monProcWindowStmt);
 		//LOG.info("DBPersistBolt.execute:4: monitor=" + mpw.monitor);
 		casSession.execute(boundStatement.bind(
-			mpw.monitor, mpw.tsInMin, mpw.tsInMax, mpw.tsOutMin, mpw.tsOutMax, 
-			mpw.tDeltaAgg, mpw.nEvents, mpw.tProcIn, mpw.tProcOut));
+			agg.monitor, agg.tsInMin, agg.tsInMax, agg.tsOutMin, agg.tsOutMax, 
+			agg.tDeltaAgg, agg.nEvents, agg.tWindowStart, agg.tWindowEnd));
 		//LOG.info("DBPersistBolt.execute:5: monitor=" + monitor);
 	}
 }

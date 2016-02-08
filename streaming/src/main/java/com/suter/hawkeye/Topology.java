@@ -5,6 +5,9 @@ import backtype.storm.LocalCluster;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
 import backtype.storm.spout.SchemeAsMultiScheme;
+import backtype.storm.generated.StormTopology;
+import backtype.storm.StormSubmitter;
+import backtype.storm.generated.AlreadyAliveException;
 
 import storm.kafka.KafkaSpout;
 import storm.kafka.ZkHosts;
@@ -21,15 +24,14 @@ public class Topology {
 
 	public static void main ( String[] args ) {
 		//consumerTestMain(args);
-		hawkeyeMain(args);
+		//hawkeyeMainLocal(args);
+		hawkeyeMainRemote(args);
 	}
 	
 	public static void consumerTestMain ( String[] args ) {
 		TopologyBuilder builder = new TopologyBuilder();
 		builder.setSpout("kafka-spout", createKafkaSpout(), 
 			HawkeyeUtil.kafkaPartitions);
-		//builder.setBolt("send-alert", new SendAlertBolt())
-		//	.shuffleGrouping("kafka-spout");
 
 		Config config = new Config();
 		//config.setDebug(true);
@@ -41,32 +43,52 @@ public class Topology {
 		localCluster.shutdown();
 	}
 
-    public static void hawkeyeMain ( String[] args )
+    public static void hawkeyeMainLocal ( String[] args )
     {
+		StormTopology topo = buildHawkeyeTopology();
+		
+		Config config = new Config();
+		config.setDebug(true);
+		
+		LocalCluster localCluster = new LocalCluster();
+		localCluster.submitTopology("hawkeye-streaming", config, topo);
+		
+		Utils.sleep(600000);
+		localCluster.shutdown();
+    }
+
+    public static void hawkeyeMainRemote ( String[] args )
+    {
+		try {
+			StormTopology topo = buildHawkeyeTopology();
+			Config config = new Config();
+			//config.setDebug(true);
+			config.setNumWorkers(10);
+			
+			StormSubmitter.submitTopology("hawkeye-streaming", config, topo);
+		} catch (Exception ex) {
+			throw new RuntimeException("Exception at hawkeyeMainRemote:", ex);
+		} 
+    }
+	
+	public static StormTopology buildHawkeyeTopology() {
 		TopologyBuilder builder = new TopologyBuilder();
 		
 		builder.setSpout("kafka-spout", createKafkaSpout());
 		builder.setBolt("extract-monitors", new ExtractMonitorsBolt())
 			.shuffleGrouping("kafka-spout");
+			
 		builder.setBolt("now-window", new NowWindowBolt())
 			.fieldsGrouping("extract-monitors", new Fields("monitor"));
-		builder.setBolt("db-persist", new DBPersistBolt())
+		builder.setBolt("alert-persist", new AlertPersistBolt())
 			.shuffleGrouping("now-window");
 
 		builder.setBolt("history-window", new HistoryWindowBolt())
 			.fieldsGrouping("extract-monitors", new Fields("monitor"));
 		builder.setBolt("history-persist", new PersistHistoryBolt())
 			.shuffleGrouping("history-window");
-
-		Config config = new Config();
-		config.setDebug(true);
-		
-		LocalCluster localCluster = new LocalCluster();
-		localCluster.submitTopology("hawkeye-streaming", config, builder.createTopology());
-		
-		Utils.sleep(600000);
-		localCluster.shutdown();
-    }
+		return builder.createTopology();
+	}
 	
 	public static KafkaSpout createKafkaSpout() {
         ZkHosts zkHosts = new ZkHosts(HawkeyeUtil.zookeeperHost);

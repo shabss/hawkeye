@@ -2,66 +2,53 @@ CREATE KEYSPACE hawkeye4 WITH replication = {'class': 'SimpleStrategy', 'replica
 use hawkeye4;
 
 CREATE TABLE hawkeye_stats (
-		name			text,
-		stat_time		timestamp,
-		PRIMARY KEY (name)
+        name            text,
+        stat_time       timestamp,
+        PRIMARY KEY (name)
 );
 
 CREATE TABLE user_monitor_collectioon (
-		userid					text,
-		monitors				Set<text>,
-		PRIMARY KEY(userid)
+        userid                  text,
+        monitors                Set<text>,
+        PRIMARY KEY(userid)
 );
 
 CREATE TABLE monitor_history (
-		monitor					text,
-		record_time_year		bigint,
-		record_time_ms			timestamp,
-		tDeltaAgg				bigint,
-		nEvents					bigint,
-		time_window_size_ms  	bigint
-		PRIMARY KEY ((monitor, record_time_year), record_time_ms)
+        monitor                 text,
+        record_time_year        bigint,
+        record_time_ms          timestamp,
+        tDeltaAgg               bigint,
+        nEvents                 bigint,
+        time_window_size_ms     bigint,
+        PRIMARY KEY ((monitor, record_time_year), record_time_ms)
 ) WITH CLUSTERING ORDER BY (record_time_ms DESC);
 
-CREATE TABLE user_alerts (
-		userid					text,
-		alert_time_year			bigint,
-		alert_time_ms			timestamp,
-		monitor					text,
+CREATE TABLE monitor_alerts (
+        monitor                 text,
+        alert_time_year         bigint,
+        alert_time_ms           timestamp,
 
-		alert_tDeltaAgg			bigint,
-		alert_nEvents			bigint,
-
-		min_tDeltaAgg			bigint,
-		min_nEvents				bigint,
-
-		sigma2neg_tDeltaAgg		bigint,
-		sigma2neg_nEvents		bigint,
-
-		sigma1neg_tDeltaAgg		bigint,
-		sigma1neg_nEvents		bigint,
-		
-		sigma1pos_tDeltaAgg		bigint,
-		sigma1pos_nEvents		bigint,
-		
-		sigma2pos_tDeltaAgg		bigint,
-		sigma2pos_nEvents		bigint,
-
-		max_tDeltaAgg			bigint,
-		max_nEvents				bigint,
-
-		PRIMARY KEY ((userid, alert_time_year), alert_time_ms)
+        alert_through           double,
+        alert_sev               text,
+        min_through             double,
+        sigma2neg_through       double,
+        sigma1neg_through       double,
+        sigma1pos_through       double,
+        sigma2pos_through       double,
+        max__through            double,
+        PRIMARY KEY ((monitor, alert_time_year), alert_time_ms)
 ) WITH CLUSTERING ORDER BY (alert_time_ms DESC);
 
 CREATE TABLE monitor_proc_window (
-		monitor text,
-		tsInMin bigint,
-		tsInMax bigint,
-		tsOutMin bigint,
-		tsOutMax bigint,
-		tDeltaAgg bigint,
-		nEvents bigint,
-		tProcIn bigint,
-		tProcOut bigint,
-		PRIMARY KEY (monitor)
+        monitor text,
+        tsInMin bigint,
+        tsInMax bigint,
+        tsOutMin bigint,
+        tsOutMax bigint,
+        tDeltaAgg bigint,
+        nEvents bigint,
+        tProcIn bigint,
+        tProcOut bigint,
+        PRIMARY KEY (monitor)
 );
+
