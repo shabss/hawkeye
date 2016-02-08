@@ -37,6 +37,7 @@
 <div class="row tab" style="">
 	<input type="button" onclick="start_alerts_update()" value="Start"/>
 	<input type="button" onclick="stop_alerts_update()" value="Stop"/>	
+	Show alerts in last <input type="text" value="10"/>	seconds
 	<table id="alerts" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>
@@ -119,45 +120,56 @@
 	///////////////////////////
 	
 	var alertsTable = $('#alerts').DataTable({
-		//'fnCreatedRow' : function (nRow, aData, iDataIndex) {
-		//	var mon_id = 'ALERT_' + aData[0];
-		//	//console.log("Row:" + mon_id);
-		//	$(nRow).attr('id', mon_id);
-		//}
+		'fnCreatedRow' : function (nRow, aData, iDataIndex) {
+			var alert_time_ms = new Date(aData[1]).getTime()
+			var alert_id = 'ALERT_' + aData[0] + alert_time_ms;
+			console.log("Row:" + alert_id);
+			$(nRow).attr('id', alert_id);
+		}
 	});
 	
 	var alertUpdateTimer = '';
 	function start_alerts_update() {
-		alertUpdateTimer = setInterval("update_monitors()",600000);
+		alertUpdateTimer = setInterval("update_alerts()",10000);
 	}
+	var lastAlertsFetched = 0;
 	
-	/*
+	
 	function update_alerts() { 
 		$.ajax({
 			type: "GET",
-			url: "/api/stream/monitors/",
+			url: "/api/stream/alerts/",
 			data: "=success",
 			success: function(msg) {
-				var monLen = msg.monitors.length;
-				//console.log(monLen)
-				for (var i = 0; i < monLen; i++) {
-					var mon = msg.monitors[i];
-					var mon_id = '#ALERT_' + mon.monitor;
-					var mon_row = monitorsTable.row(mon_id)
+				var alertsLen = msg.alerts.length;
+				console.log(msg)
+				for (var i = 0; i < alertsLen; i++) {
+					var alert = msg.alerts[i];
+					console.log(alert)
+					var alert_time_ms = new Date(alert.alert_time_ms).getTime();
+					var alert_id = '#ALERT_' + alert.monitor + alert_time_ms;
+					var alert_row = alertsTable.row(alert_id)
 					
-					if (mon_row.any()) {
+					if (alert_row.any()) {
 						//console.log("Found Row:" + mon_id);
-						mon_row.data([mon.monitor, mon.tdeltaagg])
+						//alert_row.data([
+						//	alert.monitor, alert.alert_time_ms, alert.alert_through, alert.min_through,
+						//	alert.sigma2neg_through, alert.sigma1neg_through, alert.sigma1pos_through, 
+						//	alert.sigma2pos_through, alert.max_through
+						//])
 					} else {
 						//console.log("Adding Row:" + mon_id);
-						monitorsTable.row.add([mon.monitor, mon.tdeltaagg])
+						alertsTable.row.add([
+							alert.monitor, alert.alert_time_ms, alert.alert_through, alert.min_through,
+							alert.sigma2neg_through, alert.sigma1neg_through, alert.sigma1pos_through, 
+							alert.sigma2pos_through, alert.max_through
+						]);
 					}
 				}
-				monitorsTable.draw( false );
+				alertsTable.draw( false );
 			}
 		});
 	}
-	*/
 	
 	function stop_alerts_update() {
 		clearInterval(alertUpdateTimer);
@@ -165,7 +177,7 @@
 	
 	$(document).ready(function() {
 		start_monitors_update();
-		//start_alerts_update();
+		start_alerts_update();
 	});
 </script> 
 {% endblock %} 

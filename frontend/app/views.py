@@ -46,10 +46,11 @@ def index():
 @app.route('/monitors')
 def monitors():
     return render_template("monitors.html")
+
+user_monitors = ["hawkeye", "SWTYPE23", "SWID44", "TASKTYPE100", "TASKID100", "SWTYPE20", "SWID20", "TASKTYPE20", "TASKID20",  "SWID0"]
 	
 @app.route('/api/stream/monitors/')
 def report_monitors():
-	user_monitors = ["hawkeye", "SWTYPE23", "SWID44", "TASKTYPE100", "TASKID100", "SWTYPE20", "SWID20", "TASKTYPE20", "TASKID20",  "SWID0"]
 	monitors_through = {}
 	for mon in user_monitors:
 		monitors_through[mon] = redisdb.get(mon+'_now')
@@ -58,4 +59,22 @@ def report_monitors():
 	return jsonify(monitors=jsonresponse)
 
 
+@app.route('/api/stream/alerts/')
+def report_alerts():
+	alerts = {}
+	stmt = """select monitor, alert_time_ms, alert_through, alert_sev, min_through, 
+			sigma2neg_through, sigma1neg_through, sigma1pos_through, sigma2pos_through, max_through  
+			from monitor_alerts where monitor in (%s) and alert_time_year = 2016""" % ','.join(["'" + m + "'" for m in user_monitors])
+	print stmt
+	response_list = []
+	response = session.execute(stmt)
+	for val in response:
+		response_list.append(val)
+	jsonresponse = [{
+		"monitor": x.monitor, "alert_time_ms": x.alert_time_ms, "alert_through": x.alert_through,
+		"alert_sev": x.alert_sev, "min_through": x.min_through, "sigma2neg_through": x.sigma2neg_through, 
+		"sigma1neg_through": x.sigma1neg_through, "sigma1pos_through": x.sigma1pos_through, 
+		"sigma2pos_through": x.sigma2pos_through, "max_through" : x.max_through} for x in response_list]
+	print jsonresponse
+	return jsonify(alerts=jsonresponse)
 	
