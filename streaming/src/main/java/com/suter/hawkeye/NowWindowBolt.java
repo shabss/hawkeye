@@ -120,7 +120,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 		for (String monitor : monitorsAvailable) {
 			MonitorPerfAgg agg = window.get(monitor);
 			agg.tWindowEnd = now;
-			jedis.set(monitor + HawkeyeUtil.nowJedisSuffix, new Double((double)agg.tDeltaAgg/agg.nEvents).toString());
+			jedis.set(monitor + HawkeyeUtil.nowJedisSuffix, agg.toNowJSONString());
 		}
 		currentNowWindowStart = now;
 		window.clear();
@@ -174,7 +174,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 			agg.sig2neg = 	mean - 2*sd;
 			agg.sig1neg = 	mean - sd;
 			agg.sig1pos = 	mean + sd;
-			agg.sig2pos = 	mean + 2*sd;			
+			agg.sig2pos = 	mean + 2*sd;
 		} 
 	}
 	
