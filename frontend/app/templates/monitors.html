@@ -4,8 +4,8 @@
 <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css" rel="stylesheet">
 
 <div class="row tab" style=""> <br>
-	<input type="button" onclick="start_update()" value="Start"/>
-	<input type="button" onclick="stop_update()" value="Stop"/>	
+	<input type="button" onclick="start_monitors_update()" value="Start"/>
+	<input type="button" onclick="stop_monitors_update()" value="Stop"/>	
 	<table id="monitors" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>
@@ -99,10 +99,10 @@
 					
 					if (mon_row.any()) {
 						//console.log("Found Row:" + mon_id);
-						mon_row.data([mon.monitor, mon.tdeltaagg])
+						mon_row.data([mon.monitor, mon.through])
 					} else {
 						//console.log("Adding Row:" + mon_id);
-						monitorsTable.row.add([mon.monitor, mon.tdeltaagg])
+						monitorsTable.row.add([mon.monitor, mon.through])
 					}
 				}
 				monitorsTable.draw( false );

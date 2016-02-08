@@ -26,8 +26,9 @@ import org.slf4j.LoggerFactory;
 public class PersistHistoryBolt extends BaseBasicBolt {
 	
 	public static final Logger LOG = LoggerFactory.getLogger(PersistHistoryBolt.class);
-	Session casSession;
-	PreparedStatement persistStmt;
+	private Session casSession;
+	private PreparedStatement persistStmt;
+	private Jedis jedis;
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -44,23 +45,32 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 			"INSERT INTO monitor_history (" +
 				"monitor, record_time_year, record_time_ms, tDeltaAgg, nEvents, time_window_size_ms" +
 			") VALUES (?, ?, ?, ?, ?, ?)");
-				
+		
+		jedis = new Jedis(HawkeyeUtil.nimbusHost);
+		jedis.ping();
 		LOG.info("PersistHistoryBolt.prepare: done");
 	}
 
 	@Override
 	public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
+		String monitor  = tuple.getStringByField("monitor");
+		MonitorPerfAgg agg = (MonitorPerfAgg) tuple.getValueByField("agg");
+		
+		jedis.rpush(monitor + HawkeyeUtil.histJedisSuffix, 
+			new Double((double)agg.tDeltaAgg/agg.nEvents).toString());
+
 		long now = HawkeyeUtil.getTime();
 		Calendar c = Calendar.getInstance();
 		c.setTimeInMillis(now);
 		long year = c.get(Calendar.YEAR);
 		
-		String monitor  = tuple.getStringByField("monitor");
-		MonitorPerfAgg agg = (MonitorPerfAgg) tuple.getValueByField("agg");
 		BoundStatement boundStatement = new BoundStatement(persistStmt);
 		casSession.execute(boundStatement.bind(
 			agg.monitor, year, new Date(now), agg.tDeltaAgg, 
 			agg.nEvents, HawkeyeUtil.historyWindowSizeMS));
+			
+			
+		
 	}
 }
 

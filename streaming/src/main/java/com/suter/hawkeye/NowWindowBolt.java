@@ -127,7 +127,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:3: monitor=" + monitor);
 			MonitorPerfAgg agg = window.get(monitor);
 			agg.tWindowEnd = now;
-			jedis.set(monitor+"_now", new Double((double)agg.tDeltaAgg/agg.nEvents).toString());
+			jedis.set(monitor + HawkeyeUtil.nowJedisSuffix, new Double((double)agg.tDeltaAgg/agg.nEvents).toString());
 			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:4: monitor=" + monitor);
 		}
 		currentNowWindowStart = now;
@@ -162,7 +162,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 	private void getMonitorSummary(MonitorPerfAgg agg) {
 		
 		SummaryStatistics history = new SummaryStatistics();
-		List<String> list = jedis.lrange(agg.monitor + "_history", 0 ,-1);
+		List<String> list = jedis.lrange(agg.monitor + HawkeyeUtil.histJedisSuffix, 0 ,-1);
 		for(int i=0; i<list.size(); i++) {
 			history.addValue(Double.parseDouble(list.get(i)));
 		}

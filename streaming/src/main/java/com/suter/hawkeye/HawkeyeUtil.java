@@ -20,6 +20,9 @@ class HawkeyeUtil {
 	public static long 		historyWindowSizeMS = 600000; //10 mins
 	public static long		nowWindowSizeMS = 1000;
 	
+	public static String 	nowJedisSuffix = "_now";
+	public static String 	histJedisSuffix = "_hist";
+	
 	public static long getTime() {
 		return System.currentTimeMillis();
 	}
