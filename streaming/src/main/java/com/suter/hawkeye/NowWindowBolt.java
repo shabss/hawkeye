@@ -13,6 +13,13 @@ import backtype.storm.tuple.Values;
 import java.util.*;
 import java.lang.Math;
 
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +34,9 @@ public class NowWindowBolt extends BaseBasicBolt {
 	private long currentNowWindowStart;
 	private long currentHistoryWindowStart;
 	private Jedis jedis;
-	//Session casSession;
-	//PreparedStatement historyStmt;
+	Session casSession;
+	PreparedStatement historyStmt;
+	
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -47,11 +55,11 @@ public class NowWindowBolt extends BaseBasicBolt {
 		jedis = new Jedis(HawkeyeUtil.nimbusHost);
 		jedis.ping();
 
-		//Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.cassandraHost).build();
-		//casSession = cluster.connect(HawkeyeUtil.hawkeyeKeySpace);
-		//String stmt = "SELECT monitor, tdeltaagg, nevents, time_window_size_ms " + 
-		//	"FROM monitor_history WHERE monitor = ? and and record_time_year = ?";
-		//persistStmt = casSession.prepare(stmt);
+		Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.cassandraHost).build();
+		casSession = cluster.connect(HawkeyeUtil.hawkeyeKeySpace);
+		String stmt = "SELECT monitor, tdeltaagg, nevents, time_window_size_ms " + 
+			"FROM monitor_history WHERE monitor = ? and record_time_year = ? limit 100";
+		historyStmt = casSession.prepare(stmt);
 		LOG.info("NowWindowBolt.prepare: done");
 	}
 
@@ -64,21 +72,16 @@ public class NowWindowBolt extends BaseBasicBolt {
 	
 	@Override
 	public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
-		//LOG.info("ProcWindowBolt.execute: 1");
+
 		if (isTickTuple(tuple)) {
-			//LOG.info("ProcWindowBolt.execute: 2");
-			//emitWindowAggregates(outputCollector);
 			checkAndSendAlerts(outputCollector);
 			persistProcWindowAggregates();
-			//LOG.info("ProcWindowBolt.execute: 3");
-			
 		} else {
-			//LOG.info("ProcWindowBolt.execute: 4: tuple is: " + tuple);
+
 			String monitor  = tuple.getStringByField("monitor");
 			Long tsIn = tuple.getLongByField("tsIn");
 			Long tsOut = tuple.getLongByField("tsOut");
 			Long tDelta = tuple.getLongByField("tDelta");
-			//LOG.info("ProcWindowBolt.execute: 5");
 			
 			MonitorPerfAgg agg = getMonitorAgg(monitor);
 			agg.nEvents++;
@@ -87,11 +90,6 @@ public class NowWindowBolt extends BaseBasicBolt {
 			if (Double.isNaN(agg.min)) {
 				getMonitorSummary(agg);
 			}
-			//agg.tsInMin = Math.min(tsIn, agg.tsInMin);
-			//agg.tsInMax = Math.max(tsIn, agg.tsInMax);
-			//agg.tsOutMin = Math.min(tsOut, agg.tsOutMin);
-			//agg.tsOutMax = Math.max(tsOut, agg.tsOutMin);
-			//LOG.info("ProcWindowBolt.execute: 6");
 		}
 	}
 
@@ -104,9 +102,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 
 	private void checkAndSendAlerts(BasicOutputCollector outputCollector) {
 		Set<String> monitorsAvailable = window.keySet();
-		//LOG.info("ProcWindowBolt.persistProcWindowAggregates:2:");
 		for (String monitor : monitorsAvailable) {
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:3: monitor=" + monitor);
 			MonitorPerfAgg agg = window.get(monitor);
 			if (!Double.isNaN(agg.min)) {
 				double through = (double)agg.tDeltaAgg/agg.nEvents;
@@ -119,34 +115,17 @@ public class NowWindowBolt extends BaseBasicBolt {
 		}
 	}
 	private void persistProcWindowAggregates() {
-		//LOG.info("ProcWindowBolt.persistProcWindowAggregates:1");
 		Long now = HawkeyeUtil.getTime();
 		Set<String> monitorsAvailable = window.keySet();
-		//LOG.info("ProcWindowBolt.persistProcWindowAggregates:2:");
 		for (String monitor : monitorsAvailable) {
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:3: monitor=" + monitor);
 			MonitorPerfAgg agg = window.get(monitor);
 			agg.tWindowEnd = now;
 			jedis.set(monitor + HawkeyeUtil.nowJedisSuffix, new Double((double)agg.tDeltaAgg/agg.nEvents).toString());
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:4: monitor=" + monitor);
 		}
 		currentNowWindowStart = now;
 		window.clear();
 	}
-/*
-	private void emitWindowAggregates(BasicOutputCollector outputCollector) {
-		Long now = HawkeyeUtil.getTime();
-		Set<String> monitorsAvailable = window.keySet();
-		for (String monitor : monitorsAvailable) {
-			//to do, do sanity check to see if tsIn, tsOut match tsProcIn, tsProcOut
-			MonitorPerfAgg agg = window.get(monitor);
-			agg.tWindowEnd = now;
-			outputCollector.emit(new Values(monitor, agg));
-		}
-		currentNowWindowStart = now;
-		window.clear();
-	}
-*/
+
 	private MonitorPerfAgg getMonitorAgg(String monitor) {
 		MonitorPerfAgg agg = window.get(monitor);
 		if (agg == null) {
@@ -163,6 +142,25 @@ public class NowWindowBolt extends BaseBasicBolt {
 		
 		SummaryStatistics history = new SummaryStatistics();
 		List<String> list = jedis.lrange(agg.monitor + HawkeyeUtil.histJedisSuffix, 0 ,-1);
+		if (list.size() <= 0) {
+			long now = HawkeyeUtil.getTime();
+			Calendar c = Calendar.getInstance();
+			c.setTimeInMillis(now);
+			long year = c.get(Calendar.YEAR);
+		
+			BoundStatement boundStatement = new BoundStatement(historyStmt);
+			ResultSet results = casSession.execute(boundStatement.bind(agg.monitor, year));
+		
+			for (Row row : results) {
+				String monitor 	= row.getString("monitor");
+				Long tDeltaAgg 	= row.getLong("tdeltaagg");
+				Long nEvents 	= row.getLong("nevents");
+				Double through 	= (double) tDeltaAgg / nEvents;
+				jedis.rpush(monitor + HawkeyeUtil.histJedisSuffix, through.toString());
+			}
+			list = jedis.lrange(agg.monitor + HawkeyeUtil.histJedisSuffix, 0 ,-1);
+		}
+		
 		for(int i=0; i<list.size(); i++) {
 			history.addValue(Double.parseDouble(list.get(i)));
 		}
@@ -177,27 +175,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 			agg.sig1neg = 	mean - sd;
 			agg.sig1pos = 	mean + sd;
 			agg.sig2pos = 	mean + 2*sd;			
-		}
-		
-		/*
-		long now = HawkeyeUtil.getTime();
-		Calendar c = Calendar.getInstance();
-		c.setTimeInMillis(now);
-		long year = c.get(Calendar.YEAR);
-		
-		BoundStatement boundStatement = new BoundStatement(historyStmt);
-		casSession.execute(boundStatement.bind(agg.monitor, year));
-		
-		for (Row row : results) {
-			//store data in redis list
-			String monitor 	= row.getString("monitor");
-			Long tDeltaAgg 	= row.getLong("tdeltaagg");
-			Long nEvents 	= row.getLong("nevents");
-			Double through 	= (double) tDeltaAgg / nEvents;
-			System.out.println("monitor:" + monitor + ", through="+through);
-			jedis.lpush(monitor, through.toString());
-		}
-		*/
+		} 
 	}
 	
 	private void updateMonitorsSummary() {

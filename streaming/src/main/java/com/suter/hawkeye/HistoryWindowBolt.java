@@ -45,24 +45,20 @@ public class HistoryWindowBolt extends BaseBasicBolt {
 	
 	@Override
 	public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
-		//LOG.info("HistoryWindowBolt.execute: 1");
+
 		if (isTickTuple(tuple)) {
-			//LOG.info("HistoryWindowBolt.execute: 2");
 			emitWindowAggregates(outputCollector);
-			//LOG.info("HistoryWindowBolt.execute: 3");
 		} else {
-			//LOG.info("HistoryWindowBolt.execute: 4");
-			//LOG.info("HistoryWindowBolt.execute: tuple is: " + tuple);
+
 			String monitor  = tuple.getStringByField("monitor");
 			Long tsIn = tuple.getLongByField("tsIn");
 			Long tsOut = tuple.getLongByField("tsOut");
 			Long tDelta = tuple.getLongByField("tDelta");
-			//LOG.info("ProcWindowBolt.execute: 5");
-			
+
 			MonitorPerfAgg agg = getMonitorAgg(monitor);
 			agg.nEvents++;
 			agg.tDeltaAgg += tDelta;
-			//LOG.info("ProcWindowBolt.execute: 6");
+
 		}
 	}
 
@@ -72,27 +68,7 @@ public class HistoryWindowBolt extends BaseBasicBolt {
 		return sourceComponent.equals(Constants.SYSTEM_COMPONENT_ID)
 			&& sourceStreamId.equals(Constants.SYSTEM_TICK_STREAM_ID);
 	}
-/*
-	private void persistProcWindowAggregates() {
-		//LOG.info("ProcWindowBolt.persistProcWindowAggregates:1");
-		Long now = HawkeyeUtil.getProcWindowTime();
-		Set<String> monitorsAvailable = procWindow.keySet();
-		//LOG.info("ProcWindowBolt.persistProcWindowAggregates:2:");
-		for (String monitor : monitorsAvailable) {
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:3: monitor=" + monitor);
-			BoundStatement boundStatement = new BoundStatement(monProcWindowStmt);
-			MonitorPerfAgg agg = procWindow.get(monitor);
-			agg.tProcOut = now;
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:4: monitor=" + monitor);
-			casSession.execute(boundStatement.bind(
-				agg.monitor, agg.tsInMin, agg.tsInMax, agg.tsOutMin, agg.tsOutMax, 
-				agg.tDeltaAgg, agg.nEvents, agg.tProcIn, agg.tProcOut));
-			//LOG.info("ProcWindowBolt.persistProcWindowAggregates:5: monitor=" + monitor);
-		}
-		currentWindowStart = now;
-		window.clear();
-	}
-*/
+
 	private void emitWindowAggregates(BasicOutputCollector outputCollector) {
 		Long now = HawkeyeUtil.getTime();
 		Set<String> monitorsAvailable = window.keySet();

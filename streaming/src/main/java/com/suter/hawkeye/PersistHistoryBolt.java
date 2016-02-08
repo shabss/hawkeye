@@ -22,6 +22,8 @@ import com.datastax.driver.core.BoundStatement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.Jedis;
+
 
 public class PersistHistoryBolt extends BaseBasicBolt {
 	
@@ -68,9 +70,6 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 		casSession.execute(boundStatement.bind(
 			agg.monitor, year, new Date(now), agg.tDeltaAgg, 
 			agg.nEvents, HawkeyeUtil.historyWindowSizeMS));
-			
-			
-		
 	}
 }
 
