@@ -35,7 +35,7 @@ CREATE TABLE monitor_alerts (
         sigma1neg_through       double,
         sigma1pos_through       double,
         sigma2pos_through       double,
-        max__through            double,
+        max_through             double,
         PRIMARY KEY ((monitor, alert_time_year), alert_time_ms)
 ) WITH CLUSTERING ORDER BY (alert_time_ms DESC);
 
