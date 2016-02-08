@@ -5,13 +5,13 @@ import java.io.Serializable;
 public class  MonitorPerfAgg implements Serializable {
 	public String monitor;
 	
-	
+	/*
 	//Below are for sanity checks
 	public long tsInMin;
 	public long tsInMax;
 	public long tsOutMin;
 	public long tsOutMax;
-	
+	*/
 	
 	//Below values are for maintaining aggregates
 	public long tDeltaAgg;
@@ -54,12 +54,12 @@ public class  MonitorPerfAgg implements Serializable {
 	public String toString() {
 		return "MonitorPerfAgg {" +
 			"monitor=\'" 	+ monitor + '\'' +
-			
+			/*
 			", tsInMin=" 	+ tsInMin +
 			", tsInMax=" 	+ tsInMax + 
 			", tsOutMin=" 	+ tsOutMin + 
 			", tsOutMax=" 	+ tsOutMax + 
-			
+			*/
 			", tDeltaAgg=" 	+ tDeltaAgg +
 			", nEvents=" 	+ nEvents +
 			", tWindowStart=" 	+ tWindowStart +
@@ -73,4 +73,19 @@ public class  MonitorPerfAgg implements Serializable {
 			", max=" 		+ max +
 		'}';
 	}
+	
+	public String toNowJSONString() {
+		String strRedis = "{" +
+			"monitor:\'" 	+ monitor + '\'' +
+			", through:" 	+ (new Double((double) tDeltaAgg / nEvents)).toString() +
+			", min:" 		+ min +
+			", sig2neg:" 	+ sig2neg +
+			", sig1neg:" 	+ sig1neg +
+			", sig1pos:" 	+ sig1pos +
+			", sig2pos:" 	+ sig2pos +
+			", max:" 		+ max +
+		"}";
+		return strRedis;
+	}
+	
 }
