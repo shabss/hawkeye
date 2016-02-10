@@ -144,7 +144,7 @@
 		'fnCreatedRow' : function (nRow, aData, iDataIndex) {
 			var alert_time_ms = new Date(aData[2]).getTime()
 			var alert_id = 'ALERT_' + aData[0] + "_" + alert_time_ms;
-			console.log("Row:" + alert_id);
+			//console.log("Row:" + alert_id);
 			$(nRow).attr('id', alert_id);
 			//$(nRow).addClass(aData[1]);
 			nRow.className = 'alert-' + aData[1];
