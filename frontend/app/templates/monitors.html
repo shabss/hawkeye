@@ -103,7 +103,15 @@
 						//console.log('mon.monitor=' + mon.monitor)
 						var mon_id = '#MONITOR_' + mon.monitor;
 						var mon_row = monitorsTable.row(mon_id)
-					
+						
+						mon.through = Math.round(mon.through)
+						mon.min		= Math.round(mon.min)
+						mon.sig2neg	= Math.round(mon.sig2neg)
+						mon.sig1neg	= Math.round(mon.sig1neg)
+						mon.sig1pos	= Math.round(mon.sig1pos)
+						mon.sig2pos	= Math.round(mon.sig2pos)
+						mon.max		= Math.round(mon.max)
+						
 						if (mon_row.any()) {
 							//console.log("Found Row:" + mon_id);
 							mon_row.data([mon.monitor, mon.through, mon.min, 
@@ -161,6 +169,14 @@
 					var alert_id = '#ALERT_' + alert.monitor + alert_time_ms;
 					var alert_row = alertsTable.row(alert_id)
 					
+					alert.alert_through		= Math.round(alert.alert_through)
+					alert.min_through		= Math.round(alert.min_through)
+					alert.sigma2neg_through	= Math.round(alert.sigma2neg_through)
+					alert.sigma1neg_through	= Math.round(alert.sigma1neg_through)
+					alert.sigma1pos_through	= Math.round(alert.sigma1pos_through)
+					alert.sigma2pos_through	= Math.round(alert.sigma2pos_through)
+					alert.max_through		= Math.round(alert.max_through)
+							
 					if (alert_row.any()) {
 						//console.log("Found Row:" + mon_id);
 						//alert_row.data([
