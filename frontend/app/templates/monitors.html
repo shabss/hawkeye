@@ -95,15 +95,26 @@
 				//console.log(monLen)
 				for (var i = 0; i < monLen; i++) {
 					var mon = msg.monitors[i];
-					var mon_id = '#MONITOR_' + mon.monitor;
-					var mon_row = monitorsTable.row(mon_id)
+					var nowValue = msg.monitors[i].nowValue;
+					//console.log('nowValue=' + nowValue)
+					if (nowValue) {
+						mon = eval("(" + nowValue + ")");
+						//console.log('mon post stringfy:' + mon)
+						//console.log('mon.monitor=' + mon.monitor)
+						var mon_id = '#MONITOR_' + mon.monitor;
+						var mon_row = monitorsTable.row(mon_id)
 					
-					if (mon_row.any()) {
-						//console.log("Found Row:" + mon_id);
-						mon_row.data([mon.monitor, mon.through])
-					} else {
-						//console.log("Adding Row:" + mon_id);
-						monitorsTable.row.add([mon.monitor, mon.through])
+						if (mon_row.any()) {
+							//console.log("Found Row:" + mon_id);
+							mon_row.data([mon.monitor, mon.through, mon.min, 
+								mon.sig2neg, mon.sig1neg, mon.sig1pos, 
+								mon.sig2pos, mon.max])
+						} else {
+							//console.log("Adding Row:" + mon_id);
+							monitorsTable.row.add([mon.monitor, mon.through, mon.min, 
+								mon.sig2neg, mon.sig1neg, mon.sig1pos, 
+								mon.sig2pos, mon.max])
+						}
 					}
 				}
 				monitorsTable.draw( false );
