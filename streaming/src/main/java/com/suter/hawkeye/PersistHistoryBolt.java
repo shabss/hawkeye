@@ -48,7 +48,7 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 				"monitor, record_time_year, record_time_ms, tDeltaAgg, nEvents, time_window_size_ms" +
 			") VALUES (?, ?, ?, ?, ?, ?)");
 		
-		jedis = new Jedis(HawkeyeUtil.nimbusHost);
+		jedis = new Jedis(HawkeyeUtil.jedisHost, HawkeyeUtil.jedisPort, HawkeyeUtil.jedisTimeout);
 		jedis.ping();
 		LOG.info("PersistHistoryBolt.prepare: done");
 	}

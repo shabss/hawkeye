@@ -20,6 +20,11 @@ class HawkeyeUtil {
 	public static long 		historyWindowSizeMS = 600000; //10 mins
 	public static long		nowWindowSizeMS = 1000;
 	
+	//jedis values
+	public static String 	jedisHost = nimbusHost;
+	public static int		jedisPort = 6379;
+	public static int 		jedisTimeout = 3600; //1hour
+	
 	public static String 	nowJedisSuffix = "_now";
 	public static String 	histJedisSuffix = "_hist";
 	

@@ -52,7 +52,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 		currentNowWindowStart = HawkeyeUtil.getTime();
 		currentHistoryWindowStart = currentNowWindowStart;
 		
-		jedis = new Jedis(HawkeyeUtil.nimbusHost);
+		jedis = new Jedis(HawkeyeUtil.jedisHost, HawkeyeUtil.jedisPort, HawkeyeUtil.jedisTimeout);
 		jedis.ping();
 
 		Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.cassandraHost).build();

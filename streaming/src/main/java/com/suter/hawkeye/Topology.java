@@ -74,18 +74,18 @@ public class Topology {
 	public static StormTopology buildHawkeyeTopology() {
 		TopologyBuilder builder = new TopologyBuilder();
 		
-		builder.setSpout("kafka-spout", createKafkaSpout());
-		builder.setBolt("extract-monitors", new ExtractMonitorsBolt())
+		builder.setSpout("kafka-spout", createKafkaSpout(), 20);
+		builder.setBolt("extract-monitors", new ExtractMonitorsBolt(), 20)
 			.shuffleGrouping("kafka-spout");
 			
-		builder.setBolt("now-window", new NowWindowBolt())
+		builder.setBolt("now-window", new NowWindowBolt(), 10)
 			.fieldsGrouping("extract-monitors", new Fields("monitor"));
-		builder.setBolt("alert-persist", new AlertPersistBolt())
+		builder.setBolt("alert-persist", new AlertPersistBolt(), 10)
 			.shuffleGrouping("now-window");
 
-		builder.setBolt("history-window", new HistoryWindowBolt())
+		builder.setBolt("history-window", new HistoryWindowBolt(), 10)
 			.fieldsGrouping("extract-monitors", new Fields("monitor"));
-		builder.setBolt("history-persist", new PersistHistoryBolt())
+		builder.setBolt("history-persist", new PersistHistoryBolt(), 5)
 			.shuffleGrouping("history-window");
 		return builder.createTopology();
 	}
