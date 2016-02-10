@@ -41,28 +41,30 @@
 	<table id="alerts" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>
-				<th>Alert</th>
-				<th>Time</th>
-				<th>Throughput</th>
-				<th>Min</th>
-				<th>0%-5% (-2&sigma;+)</th>
-				<th>5%-16% (-&sigma;+)</th>
-				<th>84%-95% (&sigma;+)</th>
-				<th>95%-100% (2&sigma;+)</th>
-				<th>Max</th>
+				<th width="10%">Alert</th>
+				<th width="5%">Sev</th>
+				<th width="15%">Time</th>
+				<th width="10%">Throughput</th>
+				<th width="10%">Min</th>
+				<th width="10%">0%-5% (-2&sigma;+)</th>
+				<th width="10%">5%-16% (-&sigma;+)</th>
+				<th width="10%">84%-95% (&sigma;+)</th>
+				<th width="10%">95%-100% (2&sigma;+)</th>
+				<th width="10%">Max</th>
 			</tr>
 		</thead>
 		<tfoot>
 			<tr>
-				<th>Alert</th>
-				<th>Time</th>
-				<th>Throughput</th>
-				<th>Min</th>
-				<th>0%-5% (-2&sigma;+)</th>
-				<th>5%-16% (-&sigma;+)</th>
-				<th>84%-95% (&sigma;+)</th>
-				<th>95%-100% (2&sigma;+)</th>
-				<th>Max</th>
+				<th width="10%">Alert</th>
+				<th width="5%">Sev</th>
+				<th width="15%">Time</th>
+				<th width="10%">Throughput</th>
+				<th width="10%">Min</th>
+				<th width="10%">0%-5% (-2&sigma;+)</th>
+				<th width="10%">5%-16% (-&sigma;+)</th>
+				<th width="10%">84%-95% (&sigma;+)</th>
+				<th width="10%">95%-100% (2&sigma;+)</th>
+				<th width="10%">Max</th>
 				</tr>
 		</tfoot>
 	</table>
@@ -140,10 +142,12 @@
 	
 	var alertsTable = $('#alerts').DataTable({
 		'fnCreatedRow' : function (nRow, aData, iDataIndex) {
-			var alert_time_ms = new Date(aData[1]).getTime()
-			var alert_id = 'ALERT_' + aData[0] + alert_time_ms;
+			var alert_time_ms = new Date(aData[2]).getTime()
+			var alert_id = 'ALERT_' + aData[0] + "_" + alert_time_ms;
 			console.log("Row:" + alert_id);
 			$(nRow).attr('id', alert_id);
+			//$(nRow).addClass(aData[1]);
+			nRow.className = 'alert-' + aData[1];
 		}
 	});
 	
@@ -161,12 +165,12 @@
 			data: "=success",
 			success: function(msg) {
 				var alertsLen = msg.alerts.length;
-				console.log(msg)
+				//console.log(msg)
 				for (var i = 0; i < alertsLen; i++) {
 					var alert = msg.alerts[i];
-					console.log(alert)
+					//console.log(alert)
 					var alert_time_ms = new Date(alert.alert_time_ms).getTime();
-					var alert_id = '#ALERT_' + alert.monitor + alert_time_ms;
+					var alert_id = '#ALERT_' + alert.monitor + "_" + alert_time_ms;
 					var alert_row = alertsTable.row(alert_id)
 					
 					alert.alert_through		= Math.round(alert.alert_through)
@@ -187,11 +191,12 @@
 					} else {
 						//console.log("Adding Row:" + mon_id);
 						alertsTable.row.add([
-							alert.monitor, alert.alert_time_ms, alert.alert_through, alert.min_through,
-							alert.sigma2neg_through, alert.sigma1neg_through, alert.sigma1pos_through, 
-							alert.sigma2pos_through, alert.max_through
+							alert.monitor, alert.alert_sev, alert.alert_time_ms, alert.alert_through, 
+							alert.min_through, alert.sigma2neg_through, alert.sigma1neg_through, 
+							alert.sigma1pos_through, alert.sigma2pos_through, alert.max_through
 						]);
 					}
+					//alert_row.className = 'alert-' + alert.alert_sev;
 				}
 				alertsTable.draw( false );
 			}

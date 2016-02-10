@@ -11,3 +11,10 @@ body {
 	margin-right: 25px;
 }
 
+.alert-red {
+	color: red;
+}
+
+.alert-yellow {
+    color: GoldenRod;
+}
