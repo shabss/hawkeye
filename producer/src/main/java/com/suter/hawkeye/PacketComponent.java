@@ -56,6 +56,9 @@ public class PacketComponent extends EventComponent {
 		event.packetID = compClass.prefix + id;
 		event.tsIn = ProdUtils.getEventTime();
 		event.tsOut = event.tsIn + random.nextInt(ProdUtils.MAX_PACKET_DELAY);
+		if (id % 1000 == 0) {
+			System.out.println("Emitting " + id + "th packet.");
+		}
 	}
 	
 	public void emit(HawkeyeEvent event) {
