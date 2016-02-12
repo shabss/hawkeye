@@ -18,3 +18,7 @@ body {
 .alert-yellow {
     color: GoldenRod;
 }
+
+.monitor-summary {
+	background: LightGrey;
+}
