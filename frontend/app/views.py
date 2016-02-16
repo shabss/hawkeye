@@ -8,11 +8,12 @@ from flask import render_template
 
 from redis import StrictRedis
 
-redisdb = StrictRedis(host='54.148.25.241', port=6379, db=0)
-
 USE_OLD_CLUSTER = 0
 CASSANDRA_KEYSPACE = 'hawkeye4'
 KAFKA_TOPIC = 'hawkeye4'
+REDIS_HOST = '54.148.25.241'
+REDIS_PORT = 6379
+REDIS_TIMEOUT = 10
 
 if USE_OLD_CLUSTER == 1:
 	master_ip = "ip-172-31-2-168"
@@ -22,11 +23,26 @@ else :
 	master_ip = "ip-172-31-2-180"
 	master_public_dns = "'ec2-52-34-253-146.us-west-2.compute.amazonaws.com"
 	worker_public_dns = ['52.34.253.146', '52.27.28.14', '52.35.88.14', '52.32.240.173', '52.88.31.138']
+
+try:
+	redisdb = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0, socket_timeout=REDIS_TIMEOUT)
+	redisdb.ping()
+except:
+	print "Unable to connect to redis %s:%s" % (REDIS_HOST, REDIS_PORT)
+	redisdb = None
 	
-cluster = Cluster(worker_public_dns)
-session = cluster.connect(CASSANDRA_KEYSPACE)
+
+	
+try:
+	cluster = Cluster(worker_public_dns)
+	session = cluster.connect(CASSANDRA_KEYSPACE)
+except:
+	print "Unable to connect to cassandra [%s] keyspace %s" % (worker_public_dns, CASSANDRA_KEYSPACE)
+	cluster = None;
+	session = None;
+
 g_monitors = {}
-   
+	
 @app.route('/api/email/<email>/<date>')
 def get_email(email, date):
 	stmt = "SELECT * FROM email WHERE id=%s and date=%s"
@@ -52,8 +68,10 @@ user_monitors = ["hawkeye", "mysql", "kafka", "SWTYPE23", "SWID44", "TASKTYPE100
 @app.route('/api/stream/monitors/')
 def report_monitors():
 	monitors_through = {}
-	for mon in user_monitors:
-		monitors_through[mon] = redisdb.get(mon+'_now')
+	if redisdb is not None:
+		for mon in user_monitors:
+			monitors_through[mon] = redisdb.get(mon+'_now')
+
 	jsonresponse = [{"monitor": key, "nowValue": value} for key, value in monitors_through.iteritems()]
 	print jsonresponse
 	return jsonify(monitors=jsonresponse)
@@ -65,9 +83,13 @@ def report_alerts():
 	stmt = """select monitor, alert_time_ms, alert_through, alert_sev, min_through, 
 			sigma2neg_through, sigma1neg_through, sigma1pos_through, sigma2pos_through, max_through  
 			from monitor_alerts where monitor in (%s) and alert_time_year = 2016 limit 25""" % ','.join(["'" + m + "'" for m in user_monitors])
-	print stmt
+	#print stmt
 	response_list = []
-	response = session.execute(stmt)
+	if session is not None:
+		response = session.execute(stmt)
+	else:
+		response = []
+		
 	for val in response:
 		response_list.append(val)
 	jsonresponse = [{
