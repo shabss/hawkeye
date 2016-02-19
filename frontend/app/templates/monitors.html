@@ -5,7 +5,7 @@
 
 <div class="row tab" style=""> <br>
 	<input type="button" onclick="start_monitors_update()" value="Start"/>
-	<input type="button" onclick="stop_monitors_update()" value="Stop"/>	
+	<input type="button" onclick="stop_monitors_update()" value="Stop"/>
 	<table id="monitors" class="display" cellspacing="0" width="100%">
 		<thead>
 			<tr>
@@ -73,6 +73,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript">
+	
 	var monitorsTable = $('#monitors').DataTable({
 		'fnCreatedRow' : function (nRow, aData, iDataIndex) {
 			var mon_id = 'MONITOR_' + aData[0];
@@ -156,8 +157,7 @@
 		alertUpdateTimer = setInterval("update_alerts()",10000);
 	}
 	var lastAlertsFetched = 0;
-	
-	
+
 	function update_alerts() { 
 		$.ajax({
 			type: "GET",

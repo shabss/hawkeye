@@ -8,31 +8,26 @@ from flask import render_template
 
 from redis import StrictRedis
 
-USE_OLD_CLUSTER = 0
 CASSANDRA_KEYSPACE = 'hawkeye4'
 KAFKA_TOPIC = 'hawkeye4'
 REDIS_HOST = '54.148.25.241'
 REDIS_PORT = 6379
-REDIS_TIMEOUT = 10
+REDIS_TIMEOUT = 1000
 
-if USE_OLD_CLUSTER == 1:
-	master_ip = "ip-172-31-2-168"
-	master_public_dns = "ec2-52-34-46-84.us-west-2.compute.amazonaws.com"
-	worker_public_dns = ['52.34.46.84', '52.89.61.14', '52.27.234.47', '52.24.233.165'] 
-else :
-	master_ip = "ip-172-31-2-180"
-	master_public_dns = "'ec2-52-34-253-146.us-west-2.compute.amazonaws.com"
-	worker_public_dns = ['52.34.253.146', '52.27.28.14', '52.35.88.14', '52.32.240.173', '52.88.31.138']
+worker_public_dns = ['52.34.253.146', '52.27.28.14', '52.35.88.14', '52.32.240.173', '52.88.31.138']
+
+redisdb = None
+cluster = None
+session = None
 
 try:
-	redisdb = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0, socket_timeout=REDIS_TIMEOUT)
+	#if redisdb is None:
+	redisdb = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 	redisdb.ping()
 except:
 	print "Unable to connect to redis %s:%s" % (REDIS_HOST, REDIS_PORT)
 	redisdb = None
-	
 
-	
 try:
 	cluster = Cluster(worker_public_dns)
 	session = cluster.connect(CASSANDRA_KEYSPACE)
@@ -40,6 +35,8 @@ except:
 	print "Unable to connect to cassandra [%s] keyspace %s" % (worker_public_dns, CASSANDRA_KEYSPACE)
 	cluster = None;
 	session = None;
+connectSuccess = {'redis' : redisdb is not None, 'cassandra': session is not None}
+print connectSuccess
 
 g_monitors = {}
 	
@@ -68,9 +65,8 @@ user_monitors = ["hawkeye", "mysql", "kafka", "SWTYPE23", "SWID44", "TASKTYPE100
 @app.route('/api/stream/monitors/')
 def report_monitors():
 	monitors_through = {}
-	if redisdb is not None:
-		for mon in user_monitors:
-			monitors_through[mon] = redisdb.get(mon+'_now')
+	for mon in user_monitors:
+		monitors_through[mon] = redisdb.get(mon+'_now')
 
 	jsonresponse = [{"monitor": key, "nowValue": value} for key, value in monitors_through.iteritems()]
 	print jsonresponse
