@@ -83,10 +83,11 @@ public class Topology {
 		builder.setBolt("alert-persist", new AlertPersistBolt(), 10)
 			.shuffleGrouping("now-window");
 
-		builder.setBolt("history-window", new HistoryWindowBolt(), 10)
-			.fieldsGrouping("extract-monitors", new Fields("monitor"));
-		builder.setBolt("history-persist", new PersistHistoryBolt(), 5)
-			.shuffleGrouping("history-window");
+		//builder.setBolt("history-window", new HistoryWindowBolt(), 10)
+		//	.fieldsGrouping("extract-monitors", new Fields("monitor"));
+		//builder.setBolt("history-persist", new PersistHistoryBolt(), 5)
+		//	.shuffleGrouping("history-window");
+		
 		return builder.createTopology();
 	}
 	

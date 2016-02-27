@@ -6,6 +6,8 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
@@ -25,12 +27,14 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 
 
-public class PersistHistoryBolt extends BaseBasicBolt {
+//public class PersistHistoryBolt extends BaseBasicBolt {
+public class PersistHistoryBolt extends BaseRichBolt {
 	
 	public static final Logger LOG = LoggerFactory.getLogger(PersistHistoryBolt.class);
 	private Session casSession;
 	private PreparedStatement persistStmt;
 	private Jedis jedis;
+	private OutputCollector richOutputCollector;
 	
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
@@ -38,9 +42,9 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 	}
 
 	@Override
-	public void prepare(Map stormConf,
-						TopologyContext context) {
+	public void prepare(Map stormConf, TopologyContext context, OutputCollector oc) {
 		LOG.info("PersistHistoryBolt.prepare: enter");
+		richOutputCollector = oc;
 		Cluster cluster = Cluster.builder().addContactPoint(HawkeyeUtil.cassandraHost).build();
 		casSession = cluster.connect(HawkeyeUtil.hawkeyeKeySpace);
 		persistStmt = casSession.prepare(
@@ -54,7 +58,8 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 	}
 
 	@Override
-	public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
+	//public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
+	public void execute(Tuple tuple) {
 		String monitor  = tuple.getStringByField("monitor");
 		MonitorPerfAgg agg = (MonitorPerfAgg) tuple.getValueByField("agg");
 		
@@ -70,6 +75,7 @@ public class PersistHistoryBolt extends BaseBasicBolt {
 		casSession.execute(boundStatement.bind(
 			agg.monitor, year, new Date(now), agg.tDeltaAgg, 
 			agg.nEvents, HawkeyeUtil.historyWindowSizeMS));
+		richOutputCollector.ack(tuple);
 	}
 }
 

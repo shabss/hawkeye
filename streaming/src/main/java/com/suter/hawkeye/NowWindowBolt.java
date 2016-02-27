@@ -6,6 +6,8 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
@@ -26,11 +28,11 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
-public class NowWindowBolt extends BaseBasicBolt {
-	
+//public class NowWindowBolt extends BaseBasicBolt {
+public class NowWindowBolt extends BaseRichBolt {
 	public static final Logger LOG = LoggerFactory.getLogger(NowWindowBolt.class);
 	private Map<String, MonitorPerfAgg> window;
-	
+	private OutputCollector richOutputCollector;
 	private long currentNowWindowStart;
 	private long currentHistoryWindowStart;
 	private Jedis jedis;
@@ -44,9 +46,9 @@ public class NowWindowBolt extends BaseBasicBolt {
 	}
 
 	@Override
-	public void prepare(Map stormConf,
-						TopologyContext context) {
+	public void prepare(Map conf, TopologyContext context, OutputCollector oc) {
 		LOG.info("NowWindowBolt.prepare: enter");
+		richOutputCollector = oc;
 		window = new HashMap<String, MonitorPerfAgg>();
 		
 		currentNowWindowStart = HawkeyeUtil.getTime();
@@ -71,13 +73,14 @@ public class NowWindowBolt extends BaseBasicBolt {
 	}
 	
 	@Override
-	public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
+	//public void execute(Tuple tuple, BasicOutputCollector outputCollector) {
+	public void execute(Tuple tuple) {
 
 		if (isTickTuple(tuple)) {
-			checkAndSendAlerts(outputCollector);
-			persistProcWindowAggregates();
+			//checkAndSendAlerts(outputCollector);
+			checkAndSendAlerts(tuple);
+			persistNowWindowAggregates();
 		} else {
-
 			String monitor  = tuple.getStringByField("monitor");
 			Long tsIn = tuple.getLongByField("tsIn");
 			Long tsOut = tuple.getLongByField("tsOut");
@@ -86,6 +89,8 @@ public class NowWindowBolt extends BaseBasicBolt {
 			MonitorPerfAgg agg = getMonitorAgg(monitor);
 			agg.nEvents++;
 			agg.tDeltaAgg += tDelta;
+			
+			richOutputCollector.ack(tuple);
 			
 			if (Double.isNaN(agg.min)) {
 				getMonitorSummary(agg);
@@ -100,21 +105,27 @@ public class NowWindowBolt extends BaseBasicBolt {
 			&& sourceStreamId.equals(Constants.SYSTEM_TICK_STREAM_ID);
 	}
 
-	private void checkAndSendAlerts(BasicOutputCollector outputCollector) {
+	//private void checkAndSendAlerts(BasicOutputCollector outputCollector) {
+	private void checkAndSendAlerts(Tuple tuple) {
 		Set<String> monitorsAvailable = window.keySet();
 		for (String monitor : monitorsAvailable) {
 			MonitorPerfAgg agg = window.get(monitor);
 			if (!Double.isNaN(agg.min)) {
 				double through = (double)agg.tDeltaAgg/agg.nEvents;
+				String sev = null;
 				if ((through < agg.sig2neg) || (through > agg.sig2pos)){
-					outputCollector.emit(new Values(monitor, "red", agg));
+					sev = "red";
 				} else if ((through < agg.sig1neg) || (through > agg.sig1pos)) {
-					outputCollector.emit(new Values(monitor, "yellow", agg));
+					sev = "yellow";
+				}
+				if (sev != null) {
+					richOutputCollector.emit(tuple, new Values(monitor, sev, agg));
 				}
 			}
 		}
 	}
-	private void persistProcWindowAggregates() {
+	
+	private void persistNowWindowAggregates() {
 		Long now = HawkeyeUtil.getTime();
 		Set<String> monitorsAvailable = window.keySet();
 		for (String monitor : monitorsAvailable) {
@@ -132,7 +143,7 @@ public class NowWindowBolt extends BaseBasicBolt {
 			agg = new MonitorPerfAgg();
 			agg.monitor = monitor;
 			agg.tWindowStart = currentNowWindowStart;
-			getMonitorSummary(agg);
+			//getMonitorSummary(agg);
 			window.put(monitor, agg);
 		}
 		return agg;
