@@ -12,7 +12,7 @@ CASSANDRA_KEYSPACE = 'hawkeye4'
 KAFKA_TOPIC = 'hawkeye4'
 REDIS_HOST = '54.148.25.241'
 REDIS_PORT = 6379
-REDIS_TIMEOUT = 1000
+REDIS_TIMEOUT = 5
 
 worker_public_dns = ['52.34.253.146', '52.27.28.14', '52.35.88.14', '52.32.240.173', '52.88.31.138']
 
@@ -22,7 +22,7 @@ session = None
 
 try:
 	#if redisdb is None:
-	redisdb = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0)
+	redisdb = StrictRedis(host=REDIS_HOST, port=REDIS_PORT, db=0, socket_timeout=REDIS_TIMEOUT)
 	redisdb.ping()
 except:
 	print "Unable to connect to redis %s:%s" % (REDIS_HOST, REDIS_PORT)
