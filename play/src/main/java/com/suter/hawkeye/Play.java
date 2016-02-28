@@ -8,6 +8,9 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.*;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -34,14 +37,36 @@ public class Play {
 	public static String 	histJedisSuffix = "_hist";
 	public static String 	testJestSuffix = "_test";
 	
+	public static String strJson = "{\"tsIn\":1454556923889,\"tsOut\":1454556983787,\"packetID\":\"PACKET19083\"," + 
+		"\"monitorGroup\":[" + 
+			"{\"type\":\"I\",\"subgroup\":\"TASKID\",\"id\":\"TASKID492\",\"power\":\"1\"}," + 
+			"{\"type\":\"T\",\"subgroup\":\"TASKTYPE\",\"id\":\"TASKTYPE69\",\"power\":\"2\"}," + 
+			"{\"type\":\"I\",\"subgroup\":\"SWID\",\"id\":\"SWID6\",\"power\":\"3\"}," + 
+			"{\"type\":\"T\",\"subgroup\":\"SWTYPE\",\"id\":\"mysql\",\"power\":\"4\"}," + 
+			"{\"type\":\"I\",\"subgroup\":\"APPID\",\"id\":\"hawkeye\",\"power\":\"5\"}," + 
+			"{\"type\":\"T\",\"subgroup\":\"APPTYPE\",\"id\":\"APP\",\"power\":\"6\"}" + 
+		"]}";
+		
 	public static void main(String args[]) {
 		//testRedisMain(args);
-		testKafkaMain(args)
+		testKafkaMain(args);
 	}
 	
-	public static void testKafkaMain(String args) {
+	public static void testKafkaMain(String args[]) {
 		
 		
+	}
+	
+	public static void testGsonMain(String args[]) {
+		System.out.println(strJson);
+		Gson gson = new Gson();
+		HawkeyeEvent event = gson.fromJson(strJson, HawkeyeEvent.class);
+		
+		System.out.println(event);
+		
+		for (HawkeyeMonitor mon: event.monitorGroup) {
+			System.out.println(mon);
+		}
 	}
 	public static void testRedisMain(String args[]){
 		//Connecting to Redis server on localhost
@@ -86,8 +111,6 @@ public class Play {
 		System.out.println("mean=" + history.getStandardDeviation());
 		System.out.println("Min=" + history.getMean());
 		System.out.println("max=" + history.getMax());
-		
-		
 		
 		System.out.println("PersistHistoryBolt.prepare: done");
 		casSession.close();
